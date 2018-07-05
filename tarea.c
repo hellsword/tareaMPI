@@ -62,7 +62,7 @@ void main(int argc, char **argv){
     for(int i=0;i < cant_vectores;i++){
 
         printf("\n Vector: %d\n", i+1);
-        //Efectua la suma de las diferencias punto a punto entre ambos vectores
+        //Efectua la suma de las diferencias al cuadrado punto a punto entre ambos vectores 
         int resta = 0;
         for(int j=0;j < DIM;j++){
             resta = resta + pow( ( vectores[i][j] - vector_obj[j] ), 2 );
