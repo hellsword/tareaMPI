@@ -59,6 +59,7 @@ void main(int argc, char **argv){
         }
         printf("    resta = %d\n", resta);
 
+        //Calcula la raiz cuadrada de la diferencia obtenida anteriormente
         double distancia = sqrt(resta);
         printf("    distancia = %lf \n", distancia);
         printf("\n");
