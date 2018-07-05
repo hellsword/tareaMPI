@@ -49,7 +49,7 @@ void main(int argc, char **argv){
     }
     printf("\n");
 
-    //Calcula la distancia entre el vector objetivo y cada uno de los vectores en la BD
+    //Calcula la distancia euclidiana entre el vector objetivo y cada uno de los vectores en la BD
     for(int i=0;i < cant_vectores;i++){
 
         printf("\n Vector: %d\n", i+1);
