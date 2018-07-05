@@ -4,13 +4,12 @@
 
 #define DIM 4
 
-
 void main(int argc, char **argv){
 
     //Lee la cantidad de vectores
     int cant_vectores;
     scanf("%d", &cant_vectores);
-    //Comprueba integridad en los datos de entrada
+    //Comprueba los datos de entrada
     if(cant_vectores <= 0){
         printf("\nERROR: datos de entrada no validos\n");
         exit(0);
@@ -23,6 +22,11 @@ void main(int argc, char **argv){
     for(int i=0;i < cant_vectores;i++){
         for(int j=0;j < DIM;j++){
             scanf("%d", &vectores[i][j]);
+            //Comprueba los datos de entrada
+            if(vectores[i][j] < 0){
+                printf("\nERROR: datos de entrada no validos\n");
+                exit(0);
+            }
         }
     }
 
@@ -40,6 +44,11 @@ void main(int argc, char **argv){
     int vector_obj[DIM];
     for(int i=0;i < DIM;i++){
         scanf("%d", &vector_obj[i]);
+        //Comprueba los datos de entrada
+        if(vector_obj[i] < 0){
+            printf("\nERROR: datos de entrada no validos\n");
+            exit(0);
+        }
     }
 
     //Imprime el vector objetivo
