@@ -5,30 +5,17 @@
 #define DIM 4
 
 
-double squareEuclideanDist(int  p_vec, int q_vec){
-    /*
-    Este método implementa el cuadrado de la distancia
-    :p_vec: primer vector
-    :q_vec: segundo vector
-    :return: La distancia euclidiana al cuadrado de los vectores uno y dos
-    */
-    int diff = p_vec - q_vec;
-    diff = pow (diff, 2);
-
-    return diff;
-}
-
-
 void main(int argc, char **argv){
 
     //Lee la cantidad de vectores
     int cant_vectores;
     scanf("%d", &cant_vectores);
+    //Comprueba integridad en los datos de entrada
     if(cant_vectores <= 0){
         printf("\nERROR: datos de entrada no validos\n");
         exit(0);
     }
-    printf("\ncantidad de vectores: %d\n", cant_vectores);
+    printf("\ncantidad de vectores en BD: %d\n", cant_vectores);
     printf("\n");
 
     //Lee los vectores
@@ -40,6 +27,7 @@ void main(int argc, char **argv){
     }
 
     //Imprime los vectores
+    printf("Vectores en BD:\n");
     for(int i=0;i < cant_vectores;i++){
         for(int j=0;j < DIM;j++){
             printf("%d   ",vectores[i][j]);
@@ -55,12 +43,26 @@ void main(int argc, char **argv){
     }
 
     //Imprime el vector objetivo
+    printf("Vector objetivo:\n");
     for(int i=0;i < DIM;i++){
         printf("%d   ",vector_obj[i]);
     }
     printf("\n");
 
-    double distancia = squareEuclideanDist
+    for(int i=0;i < cant_vectores;i++){
+
+        printf("\n Vector: %d\n", i+1);
+        //Efectua la suma de las diferencias punto a punto entre ambos vectores
+        int resta = 0;
+        for(int j=0;j < DIM;j++){
+            resta = resta + pow( ( vectores[i][j] - vector_obj[j] ), 2 );
+        }
+        printf("    resta = %d\n", resta);
+
+        double distancia = sqrt(resta);
+        printf("    distancia = %lf \n", distancia);
+        printf("\n");
+    }
 
     getchar();
 }
