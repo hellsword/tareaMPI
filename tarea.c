@@ -1,10 +1,16 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<math.h>
+#include <time.h>
 
-#define DIM 4
+#define DIM 1000
 
 void main(int argc, char **argv){
+
+    clock_t t_ini, t_fin;
+    double secs;
+
+    t_ini = clock();
 
     //Lee la cantidad de vectores
     int cant_vectores;
@@ -59,6 +65,7 @@ void main(int argc, char **argv){
     printf("\n");
 
     //Calcula la distancia euclidiana entre el vector objetivo y cada uno de los vectores en la BD
+    double min_distancia = INFINITY;
     for(int i=0;i < cant_vectores;i++){
 
         printf("\n Vector: %d\n", i+1);
@@ -71,9 +78,18 @@ void main(int argc, char **argv){
 
         //Calcula la raiz cuadrada de la diferencia obtenida anteriormente
         double distancia = sqrt(resta);
+        if(distancia < min_distancia)
+            min_distancia = distancia;
         printf("    distancia = %lf \n", distancia);
         printf("\n");
     }
+
+    printf("    menor distancia = %lf \n", min_distancia);
+    
+
+    t_fin = clock();
+    secs = (double)(t_fin - t_ini) / CLOCKS_PER_SEC;
+    printf("%.16g milisegundos\n", secs * 1000.0);
 
     getchar();
 }
