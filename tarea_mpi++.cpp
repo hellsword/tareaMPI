@@ -34,6 +34,7 @@ int main(int argc, char **argv){
     int vector_obj[DIM];
 
     if (yo == 0){
+        printf("\n N de procesos: %d \n", nproc);
         //Lee la cantidad de vectores
         scanf("%d", &cant_vectores);
         //Comprueba los datos de entrada
@@ -41,7 +42,7 @@ int main(int argc, char **argv){
             printf("\nERROR: datos de entrada no validos\n");
             exit(0);
         }
-        MPI_Send(&cant_vectores, 1, MPI_INT, 1, 1, MPI_COMM_WORLD);
+        //MPI_Send(&cant_vectores, 1, MPI_INT, 1, 1, MPI_COMM_WORLD);
 
 
         for(int i=0;i < cant_vectores;i++){
@@ -52,7 +53,8 @@ int main(int argc, char **argv){
                     printf("\nERROR: datos de entrada no validos\n");
                     exit(0);
                 }
-                MPI_Send(&dato, 1, MPI_INT, 1, 2, MPI_COMM_WORLD);
+                vectores.push_back(dato);
+                //MPI_Send(&dato, 1, MPI_INT, 1, 2, MPI_COMM_WORLD);
             }
         }
 
@@ -64,14 +66,48 @@ int main(int argc, char **argv){
                 printf("\nERROR: datos de entrada no validos\n");
                 exit(0);
             }
-            MPI_Send(&dato, 1, MPI_INT, 1, 3, MPI_COMM_WORLD);
+            vector_obj[i] = dato;
+            //MPI_Send(&dato, 1, MPI_INT, 1, 3, MPI_COMM_WORLD);
         }
         
     }
 
 
-    //Recibe los vectores y los guarda en una matriz
+    /* BARRERA : Todos los nodos esperan a que todos alcancen este punto en el codigo */
+	MPI_Barrier(MPI_COMM_WORLD);
+
+
+    if (yo == 0){
+        int emisor = 1;
+        for(int i=0;i < cant_vectores;i++){
+            for(int j=0;j < DIM;j++){
+                num = vectores.front();
+                MPI_Send(&num, 1, MPI_INT, emisor, 1, MPI_COMM_WORLD);
+                vectores.pop_front();
+                emisor++;
+                if(emisor >= nproc)
+                    emisor = 1;
+            }
+            //printf("\n");
+        }
+    }
+
+
     int dato2;
+    if (yo != 0)
+	{
+        MPI_Recv(&num_2, count, MPI_INT, 0, 1, MPI_COMM_WORLD, &status);
+
+        printf("yo: %d,   dato: %d\n", yo, dato2);
+           
+	}
+
+    
+
+
+
+/*
+    //Recibe los vectores y los guarda en una matriz
     if (yo == 1)
 	{
 		while(flag == 0)
@@ -101,13 +137,12 @@ int main(int argc, char **argv){
 
 
     if (yo == 1){
-        printf("\n\n");
+        printf("\nLista de Vectores: \n");
         int suma = 0;
         for(int i=0;i < cant_vectores;i++){
             for(int j=0;j < DIM;j++){
                 num = vectores.front();
-                cout << setw(10) << num ;   //setw(10) genera un espaciado
-                suma += j;
+                printf("%d    ", num);
                 vectores.pop_front();
             }
             printf("\n");
@@ -116,7 +151,7 @@ int main(int argc, char **argv){
 
 
     if (yo == 1){
-        printf("\n\n");
+        printf("\nVector Objetivo: \n");
         int suma = 0;
         for(int i=0;i < DIM;i++){
             printf("%d    ", vector_obj[i]);
@@ -124,24 +159,22 @@ int main(int argc, char **argv){
         printf("\n");
     }
 
-
+*/
     /* BARRERA : Todos los nodos esperan a que todos alcancen este punto en el codigo */
 	MPI_Barrier(MPI_COMM_WORLD);
 
 /*
-    //Imprime los vectores
     if (yo == 0){
-        int suma = 0;
-        for(int i=0;i < cant_vectores;i++){
-            for(int j=0;j < DIM;j++){
-                num = vectores.front();
-                cout << setw(10) << num << endl;
-                suma += j;
-                vectores.pop_front();
-            }
+        //Lee la cantidad de vectores
+        scanf("%d", &cant_vectores);
+        //Comprueba los datos de entrada
+        if(cant_vectores <= 0){
+            printf("\nERROR: datos de entrada no validos\n");
+            exit(0);
         }
+        MPI_Send(&cant_vectores, 1, MPI_INT, 1, 1, MPI_COMM_WORLD);
+
     }
-  
 */
 
     MPI_Finalize();
