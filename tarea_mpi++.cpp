@@ -78,15 +78,16 @@ int main(int argc, char **argv){
 
 
     if (yo == 0){
-        int emisor = 1;
+        int destino = 1;
         for(int i=0;i < cant_vectores;i++){
             for(int j=0;j < DIM;j++){
                 num = vectores.front();
-                MPI_Send(&num, 1, MPI_INT, emisor, 1, MPI_COMM_WORLD);
+                //printf("destino: %d,   dato: %d\n", destino, num);
+                MPI_Send(&num, 1, MPI_INT, destino, 1, MPI_COMM_WORLD);
                 vectores.pop_front();
-                emisor++;
-                if(emisor >= nproc)
-                    emisor = 1;
+                destino++;
+                if(destino >= nproc)
+                    destino = 1;
             }
             //printf("\n");
         }
@@ -96,7 +97,7 @@ int main(int argc, char **argv){
     int dato2;
     if (yo != 0)
 	{
-        MPI_Recv(&num_2, count, MPI_INT, 0, 1, MPI_COMM_WORLD, &status);
+        MPI_Recv(&dato2, count, MPI_INT, 0, 1, MPI_COMM_WORLD, &status);
 
         printf("yo: %d,   dato: %d\n", yo, dato2);
            
