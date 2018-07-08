@@ -17,7 +17,7 @@ void main(int argc, char **argv){
     scanf("%d", &cant_vectores);
     //Comprueba los datos de entrada
     if(cant_vectores <= 0){
-        printf("\nERROR: datos de entrada no validos\n");
+        printf("\nERROR: cantidad de vectores no valida\n");
         exit(0);
     }
     printf("\ncantidad de vectores en BD: %d\n", cant_vectores);
@@ -30,7 +30,7 @@ void main(int argc, char **argv){
             scanf("%d", &vectores[i][j]);
             //Comprueba los datos de entrada
             if(vectores[i][j] < 0){
-                printf("\nERROR: datos de entrada no validos\n");
+                printf("\nERROR: datos para vectores incorrectos\n");
                 exit(0);
             }
         }
@@ -40,11 +40,11 @@ void main(int argc, char **argv){
     printf("Vectores en BD:\n");
     for(int i=0;i < cant_vectores;i++){
         for(int j=0;j < DIM;j++){
-            printf("%d   ",vectores[i][j]);
+            //printf("%d   ",vectores[i][j]);
         }
-        printf("\n");
+        //printf("\n");
     }
-    printf("\n");
+    //printf("\n");
 
     //Lee el vector objetivo
     int vector_obj[DIM];
@@ -52,7 +52,7 @@ void main(int argc, char **argv){
         scanf("%d", &vector_obj[i]);
         //Comprueba los datos de entrada
         if(vector_obj[i] < 0){
-            printf("\nERROR: datos de entrada no validos\n");
+            printf("\nERROR: datos del vector consulta incorrectos\n");
             exit(0);
         }
     }
@@ -60,28 +60,28 @@ void main(int argc, char **argv){
     //Imprime el vector objetivo
     printf("Vector objetivo:\n");
     for(int i=0;i < DIM;i++){
-        printf("%d   ",vector_obj[i]);
+        //printf("%d   ",vector_obj[i]);
     }
-    printf("\n");
+    //printf("\n");
 
     //Calcula la distancia euclidiana entre el vector objetivo y cada uno de los vectores en la BD
     double min_distancia = INFINITY;
     for(int i=0;i < cant_vectores;i++){
 
-        printf("\n Vector: %d\n", i+1);
+        //printf("\n Vector: %d\n", i+1);
         //Efectua la suma de las diferencias al cuadrado punto a punto entre ambos vectores 
         int resta = 0;
         for(int j=0;j < DIM;j++){
             resta = resta + pow( ( vectores[i][j] - vector_obj[j] ), 2 );
         }
-        printf("    resta = %d\n", resta);
+        //printf("    resta = %d\n", resta);
 
         //Calcula la raiz cuadrada de la diferencia obtenida anteriormente
         double distancia = sqrt(resta);
         if(distancia < min_distancia)
             min_distancia = distancia;
-        printf("    distancia = %lf \n", distancia);
-        printf("\n");
+        //printf("    distancia = %lf \n", distancia);
+        //printf("\n");
     }
 
     printf("    menor distancia = %lf \n", min_distancia);
