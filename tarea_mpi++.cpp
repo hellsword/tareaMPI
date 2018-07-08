@@ -24,13 +24,12 @@ int main(int argc, char **argv){
 
     int nproc; /* Número de procesos */
 	int yo; /* Mi dirección: 0<=yo<=(nproc-1) */
-	int num = 100, num_2, etiqueta, emisor, count, flag=0;
+	int num, flag=0;
     MPI_Status status;
 	MPI_Init(&argc, &argv);
 	MPI_Comm_size(MPI_COMM_WORLD, &nproc); //Entrega el nro total de nodos
 	MPI_Comm_rank(MPI_COMM_WORLD, &yo); //Entrega el ID del nodo actual
 
-    list<int> vectores;
     int cant_vectores;
     int dato;
     int vector_obj[DIM];
@@ -53,44 +52,40 @@ int main(int argc, char **argv){
             exit(0);
         }
 
-        //Lee los vectores con los que se trabajara
+        //Lee los vectores
+        int vectores[cant_vectores][DIM];
         for(int i=0;i < cant_vectores;i++){
             for(int j=0;j < DIM;j++){
-                scanf("%d", &dato);
+                scanf("%d", &vectores[i][j]);
                 //Comprueba los datos de entrada
-                if(dato < 0){
-                    printf("\nERROR: datos de entrada para vectores no validos\n");
+                if(vectores[i][j] < 0){
+                    printf("\nERROR: datos para vectores incorrectos\n");
                     exit(0);
                 }
-                vectores.push_back(dato);  //Inserta el dato leido a la lista "vectores"
             }
         }
 
         //Lee el vector consulta
         for(int i=0;i < DIM;i++){
-            scanf("%d", &dato);
+            scanf("%d", &vector_obj[i]);
             //Comprueba los datos de entrada
-            if(dato < 0){
+            if(vector_obj[i] < 0){
                 printf("\nERROR: datos de entrada para vector objetivo no validos\n");
                 exit(0);
             }
-            vector_obj[i] = dato;
         }
 
         double min_distancia = INFINITY;
 
         if(nproc == 1){
             //Calcula la distancia euclidiana entre el vector objetivo y cada uno de los vectores en la BD
-            
             for(int i=0;i < cant_vectores;i++){
 
                 //printf("\n Vector: %d\n", i+1);
                 //Efectua la suma de las diferencias al cuadrado punto a punto entre ambos vectores 
                 int resta = 0;
                 for(int j=0;j < DIM;j++){
-                    num = vectores.front();
-                    resta = resta + pow( ( num - vector_obj[j] ), 2 );
-                    vectores.pop_front();
+                    resta = resta + pow( ( vectores[i][j] - vector_obj[j] ), 2 );
                 }
                 //printf("    resta = %d\n", resta);
 
@@ -110,7 +105,9 @@ int main(int argc, char **argv){
             int aux = cant_vectores%(nproc-1); 
 
             double distancia;
+            int inicio = 0;
 
+            //Recorre los demas procesos
             for(int i=1;i < nproc;i++){
 
                 //Envia el vector consulta al proceso destino
@@ -131,12 +128,17 @@ int main(int argc, char **argv){
                 //Envia la cantidad de datos asignados al proceso destino
                 MPI_Send(&limite, 1, MPI_INT, i, 2, MPI_COMM_WORLD);
     
+                //printf("inicio: %d\n", inicio);
+                //printf("limite: %d\n", limite+inicio);
+
                 //Envia los datos asignados al proceso destino
-                for(int j=0;j < limite*DIM; j++){
-                    num = vectores.front();
-                    MPI_Send(&num, 1, MPI_INT, i, 3, MPI_COMM_WORLD);
-                    vectores.pop_front();
+                int j;
+                for(j=inicio;j < limite+inicio; j++){
+                    for(int k=0;k < DIM;k++){
+                        MPI_Send(&vectores[j][k], 1, MPI_INT, i, 3, MPI_COMM_WORLD);
+                    }
                 }
+                inicio = j;
 
                 //Recibe la menor distancia calculada en cada proceso
                 MPI_Recv(&distancia, 1, MPI_DOUBLE, i, 4, MPI_COMM_WORLD, &status);
@@ -180,7 +182,7 @@ int main(int argc, char **argv){
                     int resta = 0;
 
                     for(int j=0; j < DIM; j++){
-                        MPI_Recv(&dato, 1, MPI_INT, 0, 3, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                        MPI_Recv(&dato, 1, MPI_INT, 0, 3, MPI_COMM_WORLD, &status);
                         //printf("    %d", dato);
 
                         //Realiza y suma las restas entre cada punto del vector consulta y el vector actual 
@@ -214,8 +216,6 @@ int main(int argc, char **argv){
 		}
 	}
 
-    /* BARRERA : Todos los nodos esperan a que todos alcancen este punto en el codigo */
-	MPI_Barrier(MPI_COMM_WORLD);
 
 
 
