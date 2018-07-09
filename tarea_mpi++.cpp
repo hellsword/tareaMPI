@@ -86,9 +86,11 @@ int main(int argc, char **argv){
         }
 
         double min_distancia = INFINITY;
+        int cont = 0;
 
         if(nproc == 1){
             //Calcula la distancia euclidiana entre el vector objetivo y cada uno de los vectores en la BD
+
             for(int i=0;i < cant_vectores;i++){
 
                 //Efectua la suma de las diferencias al cuadrado punto a punto entre ambos vectores 
@@ -99,15 +101,23 @@ int main(int argc, char **argv){
 
                 //Calcula la raiz cuadrada de la diferencia obtenida anteriormente
                 double distancia = sqrt(resta);
-                if(distancia < min_distancia)
+                if(distancia < min_distancia){
                     min_distancia = distancia;
+                    for(int j=0; j < DIM; j++){
+                        vector_min[j] = vectores[i][j];
+                    }
+                }
             }
         }
         else{
             //El proceso 0 envia los datos leidos anteriormente al resto de procesos disponibles
 
+            int aux = 99;
             //Calcula el modulo de la cantidad de vectores por la cantidad de procesos disponibles
-            int aux = cant_vectores%(nproc-1); 
+            if( cant_vectores < nproc-1 ){
+               aux = cant_vectores%(nproc-1);  
+            }
+            
 
             double distancia;
             int inicio = 0;
@@ -118,7 +128,19 @@ int main(int argc, char **argv){
                 //Envia el vector consulta al proceso destino
                 MPI_Send(&vector_obj, DIM, MPI_INT, i, 1, MPI_COMM_WORLD);
 
+
                 //Se calcula la cantidad de elementos que se enviaran a cada proceso
+                //#########################  AQUI EMPIEZA EL ERROR
+                /*
+                if( cant_vectores < nproc-1 && cont < cant_vectores){
+                    cont++;
+                    limite = 1;
+                }
+                else if( cant_vectores < nproc-1 && cont >= cant_vectores ){
+                    cont++;
+                    limite = 0;
+                }*/
+                //#########################  AQUI TERMINA EL ERROR
                 if(aux == 0){
                     limite = cant_vectores/(nproc-1);
                 }
@@ -126,6 +148,8 @@ int main(int argc, char **argv){
                     limite = cant_vectores%(nproc-1)+1;
                     aux--;
                 }
+
+                printf("proc: %d    |      limite: %d\n", i, limite);
 
                 //Envia la cantidad de datos asignados al proceso destino
                 MPI_Send(&limite, 1, MPI_INT, i, 2, MPI_COMM_WORLD);
