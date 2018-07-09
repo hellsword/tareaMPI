@@ -3,7 +3,7 @@
 #include<math.h>
 #include <time.h>
 
-#define DIM 4
+#define DIM 1000
 
 void main(int argc, char **argv){
 

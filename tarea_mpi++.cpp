@@ -1,8 +1,11 @@
-/*
+/***************************************
+Sistemas Distribuidos
+Tarea MPI
+
 Integrantes:
     -Boris Mora
     -Nicolas Muñoz
-*/
+***************************************/
 
 #include "mpi.h"
 #include<stdio.h>
@@ -16,7 +19,7 @@ Integrantes:
 
 using namespace std;
 
-#define DIM 1000
+#define DIM 4
 
 int main(int argc, char **argv){
 
@@ -30,10 +33,11 @@ int main(int argc, char **argv){
 	MPI_Comm_size(MPI_COMM_WORLD, &nproc); //Entrega el nro total de nodos
 	MPI_Comm_rank(MPI_COMM_WORLD, &yo); //Entrega el ID del nodo actual
 
-    int cant_vectores;
+    int cant_vectores;  //cantidad de vectores que se leeran
     int dato;
-    int vector_obj[DIM];
+    int vector_obj[DIM];    //aqui se almacena el vector consulta
     int limite = 0;     //Asigna la cantidad de elementos que se pasara a cada proceso
+    int vector_temp[DIM];
 
     //Se trabaja con el proceso 0
     if (yo == 0){
@@ -43,7 +47,8 @@ int main(int argc, char **argv){
         t_ini = clock();
 
 
-        printf("\n N de procesos: %d \n\n", nproc);
+        int vector_min[DIM];
+
         //Lee la cantidad de vectores
         scanf("%d", &cant_vectores);
         //Comprueba los datos de entrada
@@ -52,8 +57,13 @@ int main(int argc, char **argv){
             exit(0);
         }
 
+        int **vectores;
+        // Reserva de Memoria 
+        vectores = (int **)malloc(cant_vectores*sizeof(int*)); 
+        for (int i=0;i < cant_vectores;i++) 
+            vectores[i] = (int*)malloc(DIM*sizeof(int)); 
+
         //Lee los vectores
-        int vectores[cant_vectores][DIM];
         for(int i=0;i < cant_vectores;i++){
             for(int j=0;j < DIM;j++){
                 scanf("%d", &vectores[i][j]);
@@ -81,33 +91,28 @@ int main(int argc, char **argv){
             //Calcula la distancia euclidiana entre el vector objetivo y cada uno de los vectores en la BD
             for(int i=0;i < cant_vectores;i++){
 
-                //printf("\n Vector: %d\n", i+1);
                 //Efectua la suma de las diferencias al cuadrado punto a punto entre ambos vectores 
                 int resta = 0;
                 for(int j=0;j < DIM;j++){
                     resta = resta + pow( ( vectores[i][j] - vector_obj[j] ), 2 );
                 }
-                //printf("    resta = %d\n", resta);
 
                 //Calcula la raiz cuadrada de la diferencia obtenida anteriormente
                 double distancia = sqrt(resta);
                 if(distancia < min_distancia)
                     min_distancia = distancia;
-                //printf("    distancia = %lf \n", distancia);
-                //printf("\n");
             }
         }
         else{
             //El proceso 0 envia los datos leidos anteriormente al resto de procesos disponibles
-            //Recorre cada uno de los procesos restantes
 
-            //Calcula el modulo de cantidad de vectores por la cantidad de procesos disponibles
+            //Calcula el modulo de la cantidad de vectores por la cantidad de procesos disponibles
             int aux = cant_vectores%(nproc-1); 
 
             double distancia;
             int inicio = 0;
 
-            //Recorre los demas procesos
+            //Recorre cada uno de los procesos restantes
             for(int i=1;i < nproc;i++){
 
                 //Envia el vector consulta al proceso destino
@@ -116,21 +121,15 @@ int main(int argc, char **argv){
                 //Se calcula la cantidad de elementos que se enviaran a cada proceso
                 if(aux == 0){
                     limite = cant_vectores/(nproc-1);
-                    //printf("porc: %d  |  elementos: %d\n", i, limite);
                 }
                 else{
                     limite = cant_vectores%(nproc-1)+1;
                     aux--;
-                    //printf("porc: %d  |  elementos: %d\n", i, limite);
                 }
-                //printf("limite: %d\n", limite);
 
                 //Envia la cantidad de datos asignados al proceso destino
                 MPI_Send(&limite, 1, MPI_INT, i, 2, MPI_COMM_WORLD);
     
-                //printf("inicio: %d\n", inicio);
-                //printf("limite: %d\n", limite+inicio);
-
                 //Envia los datos asignados al proceso destino
                 int j;
                 for(j=inicio;j < limite+inicio; j++){
@@ -142,14 +141,25 @@ int main(int argc, char **argv){
 
                 //Recibe la menor distancia calculada en cada proceso
                 MPI_Recv(&distancia, 1, MPI_DOUBLE, i, 4, MPI_COMM_WORLD, &status);
-                //printf("    menor distancia recibida = %lf \n", distancia);
-                if(distancia < min_distancia)
+
+                //Recibe el vector mas cercano al vector consulta
+                MPI_Recv(&vector_temp, DIM, MPI_DOUBLE, i, 5, MPI_COMM_WORLD, &status);
+
+                if(distancia < min_distancia){
                     min_distancia = distancia;
-                
+                    for(j=0; j < DIM; j++){
+                        vector_min[j] = vector_temp[j];
+                    }
+                }
             }
         }
-        
-        printf("\n    menor distancia = %lf \n", min_distancia);
+
+        //IMprime los resultados finales
+        printf("\nVector mas cercano: \n");
+        for(int j=0; j < DIM; j++){
+            printf("    %d", vector_min[j]);
+        }
+        printf("\n\nmenor distancia = %lf \n", min_distancia);
 
         t_fin = clock();
         secs = (double)(t_fin - t_ini) / CLOCKS_PER_SEC;
@@ -158,7 +168,7 @@ int main(int argc, char **argv){
     }
 
 
-    
+    //Se trabaja con los procesos distintos a 0
     if (yo != 0)
 	{
 		while(flag == 0)
@@ -171,11 +181,10 @@ int main(int argc, char **argv){
 
                 //Recibe la cantidad de datos asignados a este proceso
                 MPI_Recv(&limite, 1, MPI_INT, 0, 2, MPI_COMM_WORLD, &status);
-                //printf(" yo: %d   |   limite: %d \n", yo, limite);
 
                 //Recibe los datos asignados a este proceso
-                //printf("yo: %d\n", yo);
                 double min_distancia = INFINITY;
+                int vector_min[DIM];
 
                 for(int i=0;i < limite; i++){
 
@@ -183,44 +192,34 @@ int main(int argc, char **argv){
 
                     for(int j=0; j < DIM; j++){
                         MPI_Recv(&dato, 1, MPI_INT, 0, 3, MPI_COMM_WORLD, &status);
-                        //printf("    %d", dato);
+                        vector_temp[j] = dato;
 
                         //Realiza y suma las restas entre cada punto del vector consulta y el vector actual 
                         //necesarias para calcular la distancia. Cada resta se eleva al cuadrado
                         resta = resta + pow( ( dato - vector_obj[j] ), 2 ); 
                     }
-                    //printf("    resta = %d\n", resta);
 
                     //Obtiene la distancia euclidiana calculando la raiz de la sumaria de restas anterior
                     double distancia = sqrt(resta);    
-                    if(distancia < min_distancia)
+                    if(distancia < min_distancia){
                         min_distancia = distancia;
-                    //printf("distancia = %lf \n", distancia);
-                    //printf("\n");
+                        for(int j=0; j < DIM; j++)
+                            vector_min[j] = vector_temp[j];
+                    }
                 }
-                //printf("    menor distancia = %lf \n", min_distancia);
+
+                //Envia la minima distancia calculada en este proceso, hacia el proceso 0
                 MPI_Send(&min_distancia, 1, MPI_DOUBLE, 0, 4, MPI_COMM_WORLD);
-                //printf("\n");
-                
-                
-                
-                //IMPRIME EL VECTOR OBJETIVO EN CADA PROCESO
-                /*
-                for(int i=0;i < DIM;i++){
-                    printf("yo: %d,   dato: %d\n", yo, vector_obj[i]);
-                }
-				printf("\n");
-                */
+
+                //Envia el vector mas cercano al vector consulta encontrado en este proceso, hacia el proceso 0
+                MPI_Send(&vector_min, DIM, MPI_DOUBLE, 0, 5, MPI_COMM_WORLD);
+
 				break;
 			}
 		}
 	}
 
-
-
-
     MPI_Finalize();
-
     return 0;
 
 }
